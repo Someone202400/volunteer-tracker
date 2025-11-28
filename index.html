@@ -53,39 +53,47 @@
 </div>
 
 <script>
-let ADMIN_PASSWORD = "2034"; // Change this
+let ADMIN_PASSWORD = "1234"; // Change this
 let data = JSON.parse(localStorage.getItem('volunteerData') || '{}');
+
+// Get elements safely
+const nameInput = document.getElementById('name');
+const hoursInput = document.getElementById('hours');
+const descInput = document.getElementById('desc');
+const adminNameInput = document.getElementById('adminName');
+const adminSubtractInput = document.getElementById('adminSubtract');
+const adminPassInput = document.getElementById('adminPass');
 
 function save() { localStorage.setItem('volunteerData', JSON.stringify(data)); }
 
 function addHours() {
-  let n = name.value.trim();
-  let h = Number(hours.value);
+  let n = nameInput.value.trim();
+  let h = Number(hoursInput.value);
   if (!n || h <= 0) return;
   if (!data[n]) data[n] = 0;
   data[n] += h;
   save();
-  name.value = hours.value = desc.value = '';
+  nameInput.value = hoursInput.value = descInput.value = '';
   render();
 }
 
 function subtractHours() {
-  let n = adminName.value.trim();
-  let h = Number(adminSubtract.value);
+  let n = adminNameInput.value.trim();
+  let h = Number(adminSubtractInput.value);
   if (!data[n]) return;
   data[n] -= h;
   if (data[n] < 0) data[n] = 0;
   save();
   render();
-  adminName.value = adminSubtract.value = '';
+  adminNameInput.value = adminSubtractInput.value = '';
 }
 
 function loginAdmin() {
-  if (adminPass.value === ADMIN_PASSWORD) {
+  if (adminPassInput.value === ADMIN_PASSWORD) {
     document.getElementById('adminSection').style.display = 'block';
     document.getElementById('adminLogin').style.display = 'none';
   }
-  adminPass.value = '';
+  adminPassInput.value = '';
 }
 
 function render() {
@@ -100,4 +108,5 @@ render();
 
 </body>
 </html>
+
 
