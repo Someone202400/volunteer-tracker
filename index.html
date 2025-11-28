@@ -1,111 +1,130 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Volunteer Hour Tracker</title>
-<style>
-  body { font-family: Arial; margin:0; background:#f3f4f6; }
-  .container { width:90%; max-width:900px; margin:auto; padding:20px; }
-  h1 { text-align:center; }
-  .card { background:white; padding:20px; border-radius:12px; margin-top:20px; box-shadow:0 2px 10px rgba(0,0,0,0.1); }
-  input, button { width:100%; padding:12px; margin:5px 0; border-radius:8px; border:1px solid #ccc; }
-  button { cursor:pointer; background:#4a6cf7; color:white; font-weight:bold; }
-  table { width:100%; border-collapse:collapse; margin-top:15px; }
-  th, td { padding:12px; border-bottom:1px solid #ddd; }
-  #adminSection { display:none; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Volunteer Hour Tracker</title>
+  <style>
+    body { font-family: Arial; margin:0; background:#f3f4f6; }
+    .container { width:90%; max-width:900px; margin:auto; padding:20px; }
+    h1 { text-align:center; }
+    .card { background:white; padding:20px; border-radius:12px; margin-top:20px; box-shadow:0 2px 10px rgba(0,0,0,0.1); }
+    input, button { width:100%; padding:12px; margin:5px 0; border-radius:8px; border:1px solid #ccc; }
+    button { cursor:pointer; background:#4a6cf7; color:white; font-weight:bold; }
+    table { width:100%; border-collapse:collapse; margin-top:15px; }
+    th, td { padding:12px; border-bottom:1px solid #ddd; }
+    #adminSection { display:none; }
+  </style>
 </head>
 <body>
-<div class="container">
-  <h1>Volunteer Hour Tracker</h1>
+  <div class="container">
+    <h1>Volunteer Hour Tracker</h1>
 
-  <div class="card">
-    <h2>Add Hours</h2>
-    <input id="name" placeholder="Your Name" />
-    <input id="hours" type="number" placeholder="Hours" />
-    <input id="desc" placeholder="Description" />
-    <button onclick="addHours()">Add Entry</button>
+    <div class="card">
+      <h2>Add Hours</h2>
+      <input id="name" placeholder="Your Name" />
+      <input id="hours" type="number" placeholder="Hours" />
+      <input id="desc" placeholder="Description (optional)" />
+      <button onclick="addHours()">Add Entry</button>
+    </div>
+
+    <div class="card" id="adminLogin">
+      <h2>Admin Login</h2>
+      <input id="adminPass" type="password" placeholder="Enter Admin Password" />
+      <button onclick="loginAdmin()">Login</button>
+    </div>
+
+    <div class="card" id="adminSection">
+      <h2>Admin Controls</h2>
+      <input id="adminName" placeholder="Student Name to Subtract" />
+      <input id="adminSubtract" type="number" placeholder="Hours to subtract" />
+      <button onclick="subtractHours()">Subtract</button>
+    </div>
+
+    <div class="card">
+      <h2>Leaderboard</h2>
+      <table>
+        <thead><tr><th>Name</th><th>Total Hours</th></tr></thead>
+        <tbody id="leaderboard"></tbody>
+      </table>
+    </div>
   </div>
 
-  <div class="card" id="adminLogin">
-    <h2>Admin Login</h2>
-    <input id="adminPass" type="password" placeholder="Enter Admin Password" />
-    <button onclick="loginAdmin()">Login</button>
-  </div>
+  <script>
+    let ADMIN_PASSWORD = "1234"; // Change this
 
-  <div class="card" id="adminSection">
-    <h2>Admin Controls</h2>
-    <input id="adminName" placeholder="Student Name to Subtract" />
-    <input id="adminSubtract" type="number" placeholder="Hours to subtract" />
-    <button onclick="subtractHours()">Subtract</button>
-  </div>
+    let data = JSON.parse(localStorage.getItem('volunteerData') || '{}');
 
-  <div class="card">
-    <h2>Leaderboard</h2>
-    <table>
-      <thead>
-        <tr><th>Name</th><th>Total Hours</th></tr>
-      </thead>
-      <tbody id="leaderboard"></tbody>
-    </table>
-  </div>
-</div>
+    const nameInput = document.getElementById('name');
+    const hoursInput = document.getElementById('hours');
+    const descInput = document.getElementById('desc');
+    const adminNameInput = document.getElementById('adminName');
+    const adminSubtractInput = document.getElementById('adminSubtract');
+    const adminPassInput = document.getElementById('adminPass');
 
-<script>
-let ADMIN_PASSWORD = "1234"; // Change this
-let data = JSON.parse(localStorage.getItem('volunteerData') || '{}');
+    function saveData() {
+      localStorage.setItem('volunteerData', JSON.stringify(data));
+      console.log('Saved data:', data);
+    }
 
-// Get elements safely
-const nameInput = document.getElementById('name');
-const hoursInput = document.getElementById('hours');
-const descInput = document.getElementById('desc');
-const adminNameInput = document.getElementById('adminName');
-const adminSubtractInput = document.getElementById('adminSubtract');
-const adminPassInput = document.getElementById('adminPass');
+    function addHours() {
+      const n = nameInput.value.trim();
+      const h = Number(hoursInput.value);
+      if (!n) { alert('Please enter a name'); return; }
+      if (!h || h <= 0) { alert('Please enter a valid number of hours'); return; }
+      if (!data[n]) data[n] = 0;
+      data[n] += h;
+      saveData();
+      nameInput.value = '';
+      hoursInput.value = '';
+      descInput.value = '';
+      render();
+    }
 
-function save() { localStorage.setItem('volunteerData', JSON.stringify(data)); }
+    function subtractHours() {
+      const n = adminNameInput.value.trim();
+      const h = Number(adminSubtractInput.value);
+      if (!n || !data[n]) { alert('Name not found'); return; }
+      if (!h || h <= 0) { alert('Enter valid hours to subtract'); return; }
+      data[n] -= h;
+      if (data[n] < 0) data[n] = 0;
+      saveData();
+      render();
+      adminNameInput.value = '';
+      adminSubtractInput.value = '';
+    }
 
-function addHours() {
-  let n = nameInput.value.trim();
-  let h = Number(hoursInput.value);
-  if (!n || h <= 0) return;
-  if (!data[n]) data[n] = 0;
-  data[n] += h;
-  save();
-  nameInput.value = hoursInput.value = descInput.value = '';
-  render();
-}
+    function loginAdmin() {
+      if (adminPassInput.value === ADMIN_PASSWORD) {
+        document.getElementById('adminSection').style.display = 'block';
+        document.getElementById('adminLogin').style.display = 'none';
+      } else {
+        alert('Wrong password');
+      }
+      adminPassInput.value = '';
+    }
 
-function subtractHours() {
-  let n = adminNameInput.value.trim();
-  let h = Number(adminSubtractInput.value);
-  if (!data[n]) return;
-  data[n] -= h;
-  if (data[n] < 0) data[n] = 0;
-  save();
-  render();
-  adminNameInput.value = adminSubtractInput.value = '';
-}
+    function render() {
+      const lb = document.getElementById('leaderboard');
+      lb.innerHTML = '';
+      const arr = Object.entries(data)
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+      for (const [n, hrs] of arr) {
+        const tr = document.createElement('tr');
+        const td1 = document.createElement('td');
+        td1.textContent = n;
+        const td2 = document.createElement('td');
+        td2.textContent = hrs;
+        tr.appendChild(td1);
+        tr.appendChild(td2);
+        lb.appendChild(tr);
+      }
+      console.log('Rendered leaderboard');  
+    }
 
-function loginAdmin() {
-  if (adminPassInput.value === ADMIN_PASSWORD) {
-    document.getElementById('adminSection').style.display = 'block';
-    document.getElementById('adminLogin').style.display = 'none';
-  }
-  adminPassInput.value = '';
-}
-
-function render() {
-  let lb = document.getElementById('leaderboard');
-  lb.innerHTML = '';
-  let arr = Object.entries(data).sort((a,b)=> b[1]-a[1] || a[0].localeCompare(b[0]));
-  arr.forEach(([name, hrs]) => lb.innerHTML += `<tr><td>${name}</td><td>${hrs}</td></tr>`);
-}
-
-render();
-</script>
-
+    render();
+  </script>
 </body>
 </html>
+
 
